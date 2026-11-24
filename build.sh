@@ -19,6 +19,19 @@ mkdir -p "$OUT/gen" "$OUT/classes" "$OUT/dex" "$OUT/res" "$DIST"
 echo "== 资源编译 =="
 "$BT/aapt2" compile --dir "$ROOT/src/res" -o "$OUT/res/res.zip"
 
+echo "== 组装 assets =="
+rm -rf "$OUT/assets"
+mkdir -p "$OUT/assets"
+cp "$ROOT/assets/index.html" "$ROOT/assets/style.css" "$ROOT/assets/devices.js" "$OUT/assets/"
+if [ -f "$ROOT/assets/config.js" ]; then
+  cp "$ROOT/assets/config.js" "$OUT/assets/config.js"
+fi
+if [ -f "$ROOT/src/h5/app.part1.js" ]; then
+  cat "$ROOT"/src/h5/app.part*.js > "$OUT/assets/app.js"
+else
+  cp "$ROOT/assets/app.js" "$OUT/assets/app.js"
+fi
+
 echo "== 资源链接 + 打包 assets =="
 "$BT/aapt2" link \
   -o "$OUT/base.apk" \
@@ -27,7 +40,7 @@ echo "== 资源链接 + 打包 assets =="
   -R "$OUT/res/res.zip" \
   --java "$OUT/gen" \
   --auto-add-overlay \
-  -A "$ROOT/assets" \
+  -A "$OUT/assets" \
   --min-sdk-version 26 \
   --target-sdk-version 36 \
   --version-code 5 \
