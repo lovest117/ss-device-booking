@@ -1,0 +1,121 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+<meta name="color-scheme" content="light only">
+<meta name="format-detection" content="telephone=no">
+<title>设备预约</title>
+<link rel="icon" href="data:,">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div class="app">
+
+  <header class="topbar">
+    <div class="topbar-main">
+      <div class="ttl-row">
+        <span class="dot" id="dotSession"></span>
+        <h1>设备预约</h1>
+        <span class="sub">神经生物教研室</span>
+      </div>
+      <div class="meta" id="topMeta">正在连接…</div>
+    </div>
+    <button class="iconbtn" id="btnRefresh" aria-label="刷新">⟳</button>
+  </header>
+
+  <div class="datebar" id="datebar"><div class="dates" id="dates"></div></div>
+
+  <main class="content" id="content">
+
+    <section id="viewBoard" class="view">
+      <div class="toolbar">
+        <div class="seg" id="segMode">
+          <button data-mode="fav" class="on">收藏</button>
+          <button data-mode="all">全部</button>
+        </div>
+        <input id="search" class="search" placeholder="搜索设备" autocomplete="off">
+      </div>
+      <div class="statbar">
+        <span id="statLeft">—</span>
+        <span id="statRight"></span>
+      </div>
+      <div class="cards" id="cards"></div>
+    </section>
+
+    <section id="viewMine" class="view hidden">
+      <div class="section-note">平台仅返回最近 5 条订单；取消后看板会同步刷新。</div>
+      <div id="orders"></div>
+    </section>
+
+    <section id="viewSet" class="view hidden">
+      <div class="block">
+        <div class="block-title">账号与会话</div>
+        <div class="kv"><span>手机号</span><b id="setPhone">—</b></div>
+        <div class="kv"><span>会话状态</span><b id="setSession">—</b></div>
+        <div class="kv"><span>最近登录</span><b id="setLogin">—</b></div>
+        <div class="row-btns">
+          <button class="btn ghost" id="btnRelogin">重新登录</button>
+          <button class="btn ghost" id="btnClear">清空会话</button>
+        </div>
+      </div>
+
+      <div class="block">
+        <div class="block-title">收藏设备 <span class="hint" id="favHint"></span></div>
+        <div class="favlist" id="favList"></div>
+      </div>
+
+      <div class="block">
+        <div class="block-title">提醒 <span class="hint" id="pushHint"></span></div>
+        <div class="kv"><span>每天 08:00 推送当天设备</span><b>已开启</b></div>
+        <div class="kv"><span>开始前 30 分钟提醒签到</span>
+          <button class="switch" id="swSign" aria-pressed="false" aria-label="签到提醒开关"></button>
+        </div>
+        <div class="pushhint" id="pushNotif"></div>
+      </div>
+
+      <div class="block">
+        <div class="block-title">运行环境</div>
+        <div class="kv"><span>机型</span><b id="setModel">—</b></div>
+        <div class="kv"><span>系统</span><b id="setOS">—</b></div>
+        <div class="kv"><span>WebView</span><b id="setWV">—</b></div>
+        <div class="kv"><span>深色模式</span><b id="setDark">—</b></div>
+        <div class="kv"><span>数据来源</span><b id="setSource">—</b></div>
+      </div>
+
+      <div class="block">
+        <div class="block-title">诊断日志 <span class="hint" id="logHint">最近 30 条</span></div>
+        <div class="logs" id="logs"></div>
+        <div class="row-btns"><button class="btn ghost" id="btnCopyLog">复制诊断信息</button></div>
+      </div>
+    </section>
+
+  </main>
+
+  <div class="actionbar hidden" id="actionBar">
+    <div class="selinfo"><b id="selCount">0</b> 段<span id="selText"></span></div>
+    <button class="btn" id="btnBook">预约</button>
+  </div>
+
+  <nav class="tabbar" id="tabbar">
+    <button data-tab="board" class="on"><em>▦</em>看板</button>
+    <button data-tab="mine"><em>☰</em>我的预约</button>
+    <button data-tab="set"><em>⚙</em>设置</button>
+  </nav>
+
+</div>
+
+<div class="progress" id="progress"></div>
+
+<div class="sheet-wrap hidden" id="sheetWrap">
+  <div class="sheet-mask" id="sheetMask"></div>
+  <div class="sheet" id="sheet"></div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script src="config.js"></script>
+<script src="devices.js"></script>
+<script src="app.js"></script>
+</body>
+</html>
