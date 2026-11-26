@@ -29,7 +29,7 @@
       var en = new Date(y, mo, da, +m[3], +m[4]).getTime();
       if (en <= st) en += 24 * 3600 * 1000;
       if (st < out.start) out.start = st;
-      if (en > out.end) out.end = en;
+      if (en < out.end) out.end = en;
     }
     return out;
   }
@@ -161,7 +161,7 @@
     }
     var slots = c.day.slots;
     if (!slots.length) {
-      return '<div class="card">' + headOpen + '<div class="free none">不可约</div></div>' +
+      return '<div class="card"><div class="card-head">' + headOpen + '<div class="free none">不可约</div></div>' +
         '<div class="card-note">当日无可预约时段（自定义时段或已关闭）</div></div>';
     }
     var totalFree = 0;
@@ -222,14 +222,14 @@
     var list = currentDevices();
     var freeN = 0;
     list.forEach(function (d) {
-      var c = S.cache[d.id + '|' + S.date];
+      var c = S.cache[d.id + '|' + date];
       if (c && c.day && c.day.slots.some(function (s) { return !s.occ; })) freeN++;
     });
     var meta = list.length + ' 台 · ' + freeN + ' 台可约';
     if (S.busy) meta += ' · 读取中…';
     else if (S.lastUpdate) meta += ' · 更新 ' + hhmmss(S.lastUpdate);
     $('topMeta').textContent = meta;
-    $('statLeft').textContent = (S.mode === 'fav' ? '收藏 ' : '全部 ') + list.length + ' 台';
+    $('statLeft').textContent = (S.mode === 'fav' ? '收藏 ' : '全部 ') + list.length;
     $('statRight').textContent = S.lastUpdate ? '更新 ' + hhmmss(S.lastUpdate) : '未更新';
   }
 
@@ -312,7 +312,6 @@
     var span = sel[0].time.split('-')[0] + ' 起 · ' + fmtCn(mins);
     if (sel.length > 1) span += ' / ' + sel.length + ' 段';
     $('selText').textContent = prettyDate(sel[0].date) + ' · ' + span;
-    $('btnBook').disabled = (MAXH > 0 && mins > MAXH * 60) || (MAXSEG > 0 && sel.length > MAXSEG);
   }
 
   // ---------------------------------------------------------------- 弹层
@@ -437,14 +436,15 @@
       if (created) {
         S.sel = [];
         closeSheet();
-        S.cache = {};
+        delete S.cache[room + '|' + date];
         setDot('ok');
         toast('已预约 · ' + name + ' · ' + sel.map(function (x) { return x.time.split('-')[0]; }).join('/') + ' · 单号 ' + created.id);
         renderCards();
-        refreshBoard(true);
+        refreshBoard(false);
       } else if (sub.code === 302) {
         closeSheet();
         S.sel = [];
+        delete S.cache[room + '|' + date];
         toast('提交已受理，订单列表暂未刷新，请稍后在「我的预约」确认');
         renderCards();
-        refreshBoard(true);
+        refreshBoard(false);
