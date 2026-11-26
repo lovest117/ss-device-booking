@@ -35,13 +35,13 @@
     return PAD(d.getHours()) + ':' + PAD(d.getMinutes()) + ':' + PAD(d.getSeconds());
   }
   function fmtDur(min) {
-    var h = Math.floor(min / 6), m = min % 6;
+    var h = Math.floor(min / 60), m = min % 60;
     if (h && m) return h + 'h' + m + 'm';
     if (h) return h + 'h';
     return m + 'm';
   }
   function fmtCn(min) {
-    var h = Math.floor(min / 6), m = min % 6;
+    var h = Math.floor(min / 60), m = min % 60;
     if (h && m) return h + ' 小时 ' + m + ' 分';
     if (h) return h + ' 小时';
     return m + ' 分钟';
@@ -49,8 +49,8 @@
   function slotMinutes(time) {
     var m = String(time || '').match(/(\d{1,2}):(\d{2})\s*-\s*(\d{1,2}):(\d{2})/);
     if (!m) return 0;
-    var a = parseInt(m[1], 10) * 6 + parseInt(m[2], 10);
-    var b = parseInt(m[3], 10) * 6 + parseInt(m[4], 10);
+    var a = parseInt(m[1], 10) * 60 + parseInt(m[2], 10);
+    var b = parseInt(m[3], 10) * 60 + parseInt(m[4], 10);
     if (b <= a) b += 24 * 60;
     return b - a;
   }
@@ -213,7 +213,7 @@
         }
         if (/confirm_booking/.test(url)) {
           var tdq = /td_id=([^&]+)/.exec(url);
-          MOCK_STATE.lastTd = tdq ? decodeURIComponent(tdq) : '';
+          MOCK_STATE.lastTd = tdq ? decodeURIComponent(tdq[1]) : '';
           return resolve({
             code: 200, error: '',
             body: '<form id="form-sub"><input type="hidden" name="form_valid_code_value" value="mock">' +
@@ -243,7 +243,7 @@
           return resolve({ code: 200, body: JSON.stringify(mockOrders()), error: '' });
         }
         if (/register_cancel/.test(url)) {
-          var rid = (/reservation_id=([^&]+)/.exec(url)) || '';
+          var rid = (/reservation_id=([^&]+)/.exec(url) || [])[1] || '';
           MOCK_STATE.orders.forEach(function (o) {
             if (o.id === decodeURIComponent(rid)) o.state = '3';
           });
@@ -399,7 +399,7 @@
       if (!t || t === '-') return;                       // 占位格不渲染
       var m = /^(\d{1,2}):(\d{2})-(\d{1,2}):(\d{2})/.exec(String(t).replace(/\s/g, ''));
       var dur = m
-        ? (parseInt(m[3], 10) * 6 + parseInt(m[4], 10)) - (parseInt(m[1], 10) * 6 + parseInt(m[2], 10))
+        ? (parseInt(m[3], 10) * 60 + parseInt(m[4], 10)) - (parseInt(m[1], 10) * 60 + parseInt(m[2], 10))
         : 60;
       if (!(dur > 0)) dur = 60;
       var users = (ru[k] || []).filter(Boolean).map(function (u) {

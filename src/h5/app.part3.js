@@ -13,17 +13,29 @@
 
   async function doCancel(id) {
     try {
+      var old = (await getOrders(false)).filter(function (o) { return o.id === id; })[0];
       var r = await raw('GET', '/index.php/Wechat/Home/register_cancel?reservation_id=' + encodeURIComponent(id));
       var txt = stripTags(r.body);
       var ok = (/取消/.test(txt) && /成功|true/i.test(txt)) || /取消成功/.test(txt) ||
         /"code"\s*:\s*200/.test(r.body);
       if (!ok) throw new AppError('取消失败：' + errText(r.body));
+      if (old) {
+        var rid = DEV[old.name];
+        var dates = {};
+        (old.raw.reserve_times || []).forEach(function (x) {
+          if (x.time && x.time.date) dates[x.time.date] = 1;
+        });
+        if (rid) {
+          Object.keys(dates).forEach(function (d) {
+            delete S.cache[rid + '|' + d];
+          });
+        }
+      }
       closeSheet();
       toast('已取消订单 ' + id);
       await getOrders(true);
       renderOrders();
-      S.cache = {};
-      refreshBoard(true);
+      refreshBoard(false);
     } catch (e) {
       openErrorSheet(e);
     }
