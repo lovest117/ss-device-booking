@@ -1,0 +1,54 @@
+name: build-check
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Setup Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - name: Setup Android SDK
+        uses: android-actions/setup-android@v3
+
+      - name: Install Android components
+        run: sdkmanager "platforms;android-36" "build-tools;36.0.0"
+
+      - name: Check H5 syntax
+        run: |
+          mkdir -p build-check
+          cat src/h5/app.part*.js > build-check/app.js
+          node --check build-check/app.js
+
+      - name: Build APK with example config
+        run: |
+          chmod +x build.sh
+          CI=1 JDK="$JAVA_HOME" SDK="$ANDROID_SDK_ROOT" ./build.sh
+
+      - name: Verify package metadata
+        run: |
+          APK="dist/joyreserve-board-1.0.5.apk"
+          test -f "$APK"
+          BT="$ANDROID_SDK_ROOT/build-tools/36.0.0"
+          "$BT/aapt2" dump badging "$APK" | tee build-check/badging.txt
+          grep -q "package: name='com.joyreserve.board' versionCode='6' versionName='1.0.5'" build-check/badging.txt
+          grep -q "sdkVersion:'26'" build-check/badging.txt
+          grep -q "targetSdkVersion:'36'" build-check/badging.txt
+          "$BT/apksigner" verify --print-certs "$APK"

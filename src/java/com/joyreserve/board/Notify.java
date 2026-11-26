@@ -47,7 +47,7 @@ public class Notify {
             ensureChannels(c);
             if (!enabled(c)) return;
             Notification.Builder b = builder(c, CH_DAILY);
-            b.setSmallIcon(R.drawable.ic_launcher)
+            b.setSmallIcon(R.drawable.ic_stat_notify)
                     .setContentTitle(title)
                     .setContentText(text)
                     .setStyle(new Notification.BigTextStyle().bigText(text))
@@ -64,7 +64,7 @@ public class Notify {
             ensureChannels(c);
             if (!enabled(c)) return;
             Notification.Builder b = builder(c, CH_SIGN);
-            b.setSmallIcon(R.drawable.ic_launcher)
+            b.setSmallIcon(R.drawable.ic_stat_notify)
                     .setContentTitle("30 分钟后开始：" + name)
                     .setContentText(lesson + " · 记得签到")
                     .setStyle(new Notification.BigTextStyle()
