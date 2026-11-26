@@ -12,7 +12,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       - name: Setup Node
         uses: actions/setup-node@v5
@@ -27,7 +27,9 @@ jobs:
 
       - name: Install Android components
         run: |
-          yes | sdkmanager --sdk_root="$ANDROID_SDK_ROOT" \
+          SDKM="$ANDROID_SDK_ROOT/cmdline-tools/latest/bin/sdkmanager"
+          test -x "$SDKM"
+          yes | "$SDKM" --sdk_root="$ANDROID_SDK_ROOT" \
             "platforms;android-36" "build-tools;36.0.0"
 
       - name: Check H5 syntax
