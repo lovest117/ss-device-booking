@@ -29,7 +29,7 @@
       var en = new Date(y, mo, da, +m[3], +m[4]).getTime();
       if (en <= st) en += 24 * 3600 * 1000;
       if (st < out.start) out.start = st;
-      if (en < out.end) out.end = en;
+      if (en > out.end) out.end = en;
     }
     return out;
   }
@@ -222,7 +222,7 @@
     var list = currentDevices();
     var freeN = 0;
     list.forEach(function (d) {
-      var c = S.cache[d.id + '|' + date];
+      var c = S.cache[d.id + '|' + S.date];
       if (c && c.day && c.day.slots.some(function (s) { return !s.occ; })) freeN++;
     });
     var meta = list.length + ' 台 · ' + freeN + ' 台可约';
