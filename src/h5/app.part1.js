@@ -35,13 +35,13 @@
     return PAD(d.getHours()) + ':' + PAD(d.getMinutes()) + ':' + PAD(d.getSeconds());
   }
   function fmtDur(min) {
-    var h = Math.floor(min / 60), m = min % 60;
+    var h = Math.floor(min / 6), m = min % 6;
     if (h && m) return h + 'h' + m + 'm';
     if (h) return h + 'h';
     return m + 'm';
   }
   function fmtCn(min) {
-    var h = Math.floor(min / 60), m = min % 60;
+    var h = Math.floor(min / 6), m = min % 6;
     if (h && m) return h + ' 小时 ' + m + ' 分';
     if (h) return h + ' 小时';
     return m + ' 分钟';
@@ -49,8 +49,8 @@
   function slotMinutes(time) {
     var m = String(time || '').match(/(\d{1,2}):(\d{2})\s*-\s*(\d{1,2}):(\d{2})/);
     if (!m) return 0;
-    var a = parseInt(m[1], 10) * 60 + parseInt(m[2], 10);
-    var b = parseInt(m[3], 10) * 60 + parseInt(m[4], 10);
+    var a = parseInt(m[1], 10) * 6 + parseInt(m[2], 10);
+    var b = parseInt(m[3], 10) * 6 + parseInt(m[4], 10);
     if (b <= a) b += 24 * 60;
     return b - a;
   }
@@ -71,6 +71,11 @@
     if (m) return m[1].trim();
     var t = stripTags(h);
     return t ? t.slice(0, 120) : '(空响应)';
+  }
+  function maskSecrets(s) {
+    return String(s == null ? '' : s).replace(/1[3-9]\d{9}/g, function (m) {
+      return m.charAt(0) + '**********';
+    });
   }
 
   // ---------------------------------------------------------------- HTTP 桥
@@ -208,7 +213,7 @@
         }
         if (/confirm_booking/.test(url)) {
           var tdq = /td_id=([^&]+)/.exec(url);
-          MOCK_STATE.lastTd = tdq ? decodeURIComponent(tdq[1]) : '';
+          MOCK_STATE.lastTd = tdq ? decodeURIComponent(tdq) : '';
           return resolve({
             code: 200, error: '',
             body: '<form id="form-sub"><input type="hidden" name="form_valid_code_value" value="mock">' +
@@ -238,7 +243,7 @@
           return resolve({ code: 200, body: JSON.stringify(mockOrders()), error: '' });
         }
         if (/register_cancel/.test(url)) {
-          var rid = (/reservation_id=([^&]+)/.exec(url) || [])[1] || '';
+          var rid = (/reservation_id=([^&]+)/.exec(url)) || '';
           MOCK_STATE.orders.forEach(function (o) {
             if (o.id === decodeURIComponent(rid)) o.state = '3';
           });
@@ -296,8 +301,12 @@
   }
 
   function pushLog(method, path, code, ms, body, error) {
-    var snip = String(body || '').replace(/\s+/g, ' ').slice(0, 150);
-    if (error) snip = 'ERR ' + error.slice(0, 140);
+    var snip = '';
+    if (error) {
+      snip = 'ERR ' + maskSecrets(String(error)).slice(0, 140);
+    } else if (!code || code >= 400) {
+      snip = 'HTTP ' + code;
+    }
     S.logs.unshift({ t: new Date(), method: method, path: path, code: code, ms: ms || 0, snip: snip });
     if (S.logs.length > 30) S.logs.length = 30;
     if (S.tab === 'set') renderLogs();
@@ -390,7 +399,7 @@
       if (!t || t === '-') return;                       // 占位格不渲染
       var m = /^(\d{1,2}):(\d{2})-(\d{1,2}):(\d{2})/.exec(String(t).replace(/\s/g, ''));
       var dur = m
-        ? (parseInt(m[3], 10) * 60 + parseInt(m[4], 10)) - (parseInt(m[1], 10) * 60 + parseInt(m[2], 10))
+        ? (parseInt(m[3], 10) * 6 + parseInt(m[4], 10)) - (parseInt(m[1], 10) * 6 + parseInt(m[2], 10))
         : 60;
       if (!(dur > 0)) dur = 60;
       var users = (ru[k] || []).filter(Boolean).map(function (u) {
@@ -448,4 +457,3 @@
     times.forEach(function (t) {
       var d = t.date || (t.name ? t.name.slice(0, 4) + '-' + t.name.slice(4, 6) + '-' + t.name.slice(6, 8) : '');
       if (!d) return;
-
