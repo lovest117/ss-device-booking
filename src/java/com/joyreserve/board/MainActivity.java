@@ -14,6 +14,7 @@ import android.view.Window;
 import android.view.WindowInsets;
 import android.view.WindowInsetsController;
 import android.webkit.ConsoleMessage;
+import android.webkit.RenderProcessGoneDetail;
 import android.webkit.WebChromeClient;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
@@ -68,13 +69,7 @@ public class MainActivity extends Activity {
             }
         });
 
-        web = new WebView(this);
-        web.setBackgroundColor(Color.WHITE);
-        root.addView(web, new FrameLayout.LayoutParams(
-                FrameLayout.LayoutParams.MATCH_PARENT,
-                FrameLayout.LayoutParams.MATCH_PARENT));
-
-        setupWebView();
+        rebuildWebView();
 
         // 必须先有 DecorView，再碰 WindowInsetsController
         setContentView(root);
@@ -167,6 +162,15 @@ public class MainActivity extends Activity {
         }
     }
 
+    private void rebuildWebView() {
+        web = new WebView(this);
+        web.setBackgroundColor(Color.WHITE);
+        root.addView(web, new FrameLayout.LayoutParams(
+                FrameLayout.LayoutParams.MATCH_PARENT,
+                FrameLayout.LayoutParams.MATCH_PARENT));
+        setupWebView();
+    }
+
     private void setupWebView() {
         WebSettings s = web.getSettings();
         s.setJavaScriptEnabled(true);
@@ -181,7 +185,7 @@ public class MainActivity extends Activity {
         s.setBuiltInZoomControls(false);
         s.setTextZoom(100);
         s.setCacheMode(WebSettings.LOAD_DEFAULT);
-        s.setMixedContentMode(WebSettings.MIXED_CONTENT_ALWAYS_ALLOW);
+        s.setMixedContentMode(WebSettings.MIXED_CONTENT_NEVER_ALLOW);
         // Android 16 默认算法变暗可能打乱语义色块
         try {
             if (Build.VERSION.SDK_INT >= 33) {
@@ -214,6 +218,21 @@ public class MainActivity extends Activity {
             public boolean shouldOverrideUrlLoading(WebView view, android.webkit.WebResourceRequest request) {
                 String url = request.getUrl() == null ? "" : request.getUrl().toString();
                 return !url.startsWith("file:///android_asset/");
+            }
+
+            @Override
+            public boolean onRenderProcessGone(WebView view, RenderProcessGoneDetail detail) {
+                try {
+                    if (view != null) {
+                        if (view.getParent() == root) root.removeView(view);
+                        view.destroy();
+                    }
+                } catch (Throwable t) {
+                    Log.w(TAG, "render gone cleanup: " + t);
+                }
+                web = null;
+                rebuildWebView();
+                return true;
             }
         });
 
